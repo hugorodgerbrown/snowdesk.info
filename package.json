@@ -7,10 +7,13 @@
   ],
   "dependencies": {
     "@anthropic-ai/sdk": "latest",
-    "@prisma/client": "latest",
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "pg": "^8.20.0",
     "resend": "latest"
   },
   "devDependencies": {
-    "prisma": "latest"
+    "@types/node": "^25.5.0",
+    "prisma": "^7.6.0"
   }
 }
