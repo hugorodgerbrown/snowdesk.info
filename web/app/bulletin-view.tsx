@@ -53,6 +53,12 @@ export function BulletinView({ bulletin }: { bulletin: Bulletin }) {
         <p style={{ color: "#888", fontSize: "13px", margin: "4px 0 0" }}>
           {a.date} · {bulletin.regionNames?.join(", ")}
         </p>
+        <p style={{ color: "#aaa", fontSize: "12px", margin: "2px 0 0" }}>
+          Issued {bulletin.issuedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+          {bulletin.nextUpdate && (
+            <> · Next update {bulletin.nextUpdate.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</>
+          )}
+        </p>
       </div>
 
       {/* Verdict banner */}
