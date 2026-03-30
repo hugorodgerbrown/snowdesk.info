@@ -133,13 +133,29 @@ async function fetchSLFBulletins() {
 }
 
 async function generateSummary(props: SLFFeature["properties"]) {
-  // Extract text descriptions from HTML
-  const weatherForecast = props.weatherForecast?.comment || "";
-  const snowpackStructure = props.snowpackStructure?.comment || "";
-  const tendencyText = props.tendency?.[0]?.comment || "";
+  // Extract and clean HTML-encoded text
+  const cleanHtml = (html: string) => {
+    if (!html) return "";
+    return html
+      .replace(/<[^>]*>/g, " ") // Remove HTML tags
+      .replace(/&nbsp;/g, " ")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
 
-  // Get primary danger level
+  const weatherForecast = cleanHtml(props.weatherForecast?.comment || "");
+  const snowpackStructure = cleanHtml(props.snowpackStructure?.comment || "");
+  const tendencyText = cleanHtml(props.tendency?.[0]?.comment || "");
+
+  // Get primary danger level and subdivision nuance
   const mainDangerRating = props.dangerRatings?.[0]?.mainValue || "unknown";
+  const subdivision = props.dangerRatings?.[0]?.customData?.CH?.subdivision || null;
+  const nuancedDanger = `${mainDangerRating}${subdivision === "plus" ? "+" : subdivision === "minus" ? "-" : ""}`;
 
   const prompt = `You are an avalanche forecasting expert. Summarize this SLF avalanche bulletin into a JSON object.
 
@@ -147,9 +163,9 @@ async function generateSummary(props: SLFFeature["properties"]) {
 
 **Issue Time:** ${props.publicationTime}
 **Valid Until:** ${props.validTime.endTime}
-**Primary Danger Level:** ${mainDangerRating}
+**Primary Danger Level:** ${nuancedDanger}
 
-**Regions:** ${props.regions.map((r) => r.name).join(", ")}
+**Regions Covered:** ${props.regions.map((r) => r.name).join(", ")}
 
 **Avalanche Problems:**
 ${props.avalancheProblems
@@ -163,13 +179,13 @@ ${props.avalancheProblems
   )
   .join("")}
 
-**Weather Forecast:**
+**Weather Forecast (from past 24h and next forecast):**
 ${weatherForecast}
 
 **Snowpack Structure:**
 ${snowpackStructure}
 
-**Outlook:**
+**Outlook (2-day forecast):**
 ${tendencyText}
 
 ## Task
