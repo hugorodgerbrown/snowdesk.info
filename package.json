@@ -1,0 +1,8 @@
+{
+  "name": "snowdesk",
+  "private": true,
+  "workspaces": [
+    "web",
+    "poller"
+  ]
+}

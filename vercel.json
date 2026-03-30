@@ -1,0 +1,20 @@
+{
+  "experimentalServices": {
+    "web": {
+      "entrypoint": "web",
+      "routePrefix": "/",
+      "framework": "nextjs"
+    },
+    "poller": {
+      "entrypoint": "poller",
+      "routePrefix": "/poller",
+      "framework": "nextjs"
+    }
+  },
+  "crons": [
+    {
+      "path": "/poller/api/run",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
