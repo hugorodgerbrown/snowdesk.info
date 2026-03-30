@@ -1,7 +1,26 @@
+# Dependencies
 node_modules/
+
+# Next.js build output
 .next/
-.vercel/
-*.local
-.env*.local
 dist/
-.vercel
+
+# Vercel
+.vercel/
+
+# Environment variables (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+generated/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Supabase local dev
+supabase/
+
+# OS
+.DS_Store
