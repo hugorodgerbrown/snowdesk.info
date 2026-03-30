@@ -1,0 +1,79 @@
+// This is your Prisma schema file.
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Bulletin {
+  id            String   @id @default(cuid())
+
+  // SLF bulletin ID (from API)
+  bulletinId    String   @unique
+
+  // Raw GeoJSON feature from SLF API
+  rawData       Json     @db.JsonB
+
+  // Claude-generated summary (structured)
+  summary       Json     @db.JsonB
+
+  // Metadata from bulletin
+  issuedAt      DateTime
+  validFrom     DateTime
+  validTo       DateTime
+  nextUpdate    DateTime?
+  lang          String   @default("en")
+  unscheduled   Boolean  @default(false)
+
+  // When we fetched this
+  fetchedAt     DateTime @default(now())
+
+  // Relations
+  regions       BulletinRegion[]
+  notifications EmailNotification[]
+
+  @@unique([bulletinId, issuedAt])
+  @@index([fetchedAt])
+  @@index([issuedAt])
+}
+
+model BulletinRegion {
+  id         String   @id @default(cuid())
+  bulletinId String
+  bulletin   Bulletin @relation(fields: [bulletinId], onDelete: Cascade)
+
+  // Region info from SLF
+  regionId   String
+  regionName String
+
+  // Main danger rating for this bulletin
+  dangerLevel String // "low", "moderate", "considerable", "high", "very_high"
+
+  // Full raw data for this region from the feature
+  rawData    Json     @db.JsonB
+
+  @@unique([bulletinId, regionId])
+  @@index([bulletinId])
+}
+
+model EmailNotification {
+  id         String   @id @default(cuid())
+  bulletinId String
+  bulletin   Bulletin @relation(fields: [bulletinId], onDelete: Cascade)
+
+  // Recipient email
+  recipient  String
+
+  // Email status
+  status     String   @default("pending") // pending, sent, failed
+  sentAt     DateTime?
+  error      String?
+
+  @@index([bulletinId])
+  @@index([status])
+}

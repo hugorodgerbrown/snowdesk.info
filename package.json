@@ -4,5 +4,13 @@
   "workspaces": [
     "web",
     "poller"
-  ]
+  ],
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "@prisma/client": "latest",
+    "resend": "latest"
+  },
+  "devDependencies": {
+    "prisma": "latest"
+  }
 }
