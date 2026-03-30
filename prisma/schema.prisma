@@ -3,11 +3,11 @@
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 model Bulletin {
@@ -19,8 +19,12 @@ model Bulletin {
   // Raw GeoJSON feature from SLF API
   rawData       Json     @db.JsonB
 
-  // Claude-generated summary (structured)
+  // Claude-generated summary (BulletinAnalysis JSON)
   summary       Json     @db.JsonB
+
+  // Region metadata
+  regionIds     String[] // Array of region IDs covered by this bulletin
+  regionNames   String[] // Array of region names
 
   // Metadata from bulletin
   issuedAt      DateTime
@@ -33,47 +37,7 @@ model Bulletin {
   // When we fetched this
   fetchedAt     DateTime @default(now())
 
-  // Relations
-  regions       BulletinRegion[]
-  notifications EmailNotification[]
-
   @@unique([bulletinId, issuedAt])
   @@index([fetchedAt])
   @@index([issuedAt])
-}
-
-model BulletinRegion {
-  id         String   @id @default(cuid())
-  bulletinId String
-  bulletin   Bulletin @relation(fields: [bulletinId], onDelete: Cascade)
-
-  // Region info from SLF
-  regionId   String
-  regionName String
-
-  // Main danger rating for this bulletin
-  dangerLevel String // "low", "moderate", "considerable", "high", "very_high"
-
-  // Full raw data for this region from the feature
-  rawData    Json     @db.JsonB
-
-  @@unique([bulletinId, regionId])
-  @@index([bulletinId])
-}
-
-model EmailNotification {
-  id         String   @id @default(cuid())
-  bulletinId String
-  bulletin   Bulletin @relation(fields: [bulletinId], onDelete: Cascade)
-
-  // Recipient email
-  recipient  String
-
-  // Email status
-  status     String   @default("pending") // pending, sent, failed
-  sentAt     DateTime?
-  error      String?
-
-  @@index([bulletinId])
-  @@index([status])
 }
