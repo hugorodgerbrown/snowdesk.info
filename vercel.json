@@ -14,7 +14,11 @@
   "crons": [
     {
       "path": "/poller/api/run",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/poller/api/run",
+      "schedule": "0 16 * * *"
     }
   ]
 }
