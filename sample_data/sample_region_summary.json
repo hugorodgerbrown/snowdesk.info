@@ -1,0 +1,41 @@
+{
+  "date": "30 March 2026",
+  "onPiste": {
+    "notes": "Excellent fresh snow cover down to low altitudes, but visibility on the northern flanks will be very poor with persistent snowfall. Pistes south of the main ridge may see sunshine and good skiing conditions.",
+    "rating": "Acceptable"
+  },
+  "outlook": "Wednesday: snowfall eases on the northern flank (10–20 cm more), winds moderate, and dry avalanche danger begins to decrease — but conditions remain critical off-piste. Moist loose-snow avalanches expected with afternoon solar radiation. Thursday: mostly sunny, freezing level rising (1600 m north, 2200 m south), dry avalanche danger drops further, but increasing wet loose-snow and gliding avalanche activity during the day.",
+  "summary": "Heavy new snowfall (20–60 cm) combined with storm-force northerly winds is creating widespread, dangerous wind slabs on all aspects above 2200 m. Persistent weak layers buried in the old snowpack add a nasty deep-slab problem, especially on shady slopes. Today is a day to enjoy fresh snow on groomed pistes and leave the backcountry to another time.",
+  "weather": {
+    "wind": "Strong to storm-force northerly on alpine ridgelines; moderate to strong foehn in southern valleys",
+    "midTemp": "−8°C (2000 m north) / −5°C (2000 m south)",
+    "baseDepth": "Variable; substantial upper-mountain snowpack with old weak layers",
+    "newSnow24h": "20–60 cm depending on region (40–60 cm on northern flank Wildstrubel–Glarus)",
+    "resortTemp": "−2 to 0°C (valley floors)",
+    "summitTemp": "−8°C",
+    "visibility": "Poor in the north — persistent heavy snowfall and cloud; mostly sunny south of the main ridge",
+    "freezingLevel": "~500–900 m"
+  },
+  "bestBets": [
+    "Groomed pistes below 2200 m, especially south-facing runs where visibility may be better",
+    "Resorts south of the main Alpine ridge (Ticino south) where sunshine and lighter snowfall are expected",
+    "Low-altitude valley runs benefiting from fresh snow cover down to 500–900 m"
+  ],
+  "offPiste": {
+    "notes": "Fresh wind slabs are widespread on all aspects above 2200 m and easily triggered by a single skier. Buried persistent weak layers can produce large avalanches, particularly on steep, seldom-skied shady slopes.",
+    "rating": "Avoid"
+  },
+  "keyHazards": [
+    "Widespread new-snow and wind slabs on all aspects above 2200 m — easily triggered by a single person",
+    "Persistent weak layers (facets and buried surface hoar) on shady slopes — potential for large avalanches",
+    "Deep persistent weak layers in inner-alpine Valais and Grisons — isolated large releases possible to the ground",
+    "Storm-force northerly winds on alpine ridgelines causing intense snow transport and poor visibility"
+  ],
+  "skiTouring": {
+    "notes": "The bulletin explicitly states that backcountry touring calls for expert-level avalanche assessment. Storm-force winds at ridgeline, very poor visibility in the north, reactive wind slabs, and deep persistent weak layers make route-finding and safe terrain selection extremely difficult today.",
+    "rating": "Avoid"
+  },
+  "dangerLevel": "Considerable (3)",
+  "verdictColour": "red",
+  "overallVerdict": "STAY ON PISTE"
+}
