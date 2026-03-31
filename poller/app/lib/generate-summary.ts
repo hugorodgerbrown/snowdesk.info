@@ -8,11 +8,7 @@
 //   const analysis = await analyseBulletin(feature, "CH-4116");
 
 import Anthropic from "@anthropic-ai/sdk";
-import {
-  BULLETIN_SYSTEM_PROMPT,
-  BULLETIN_MODEL,
-  BULLETIN_MAX_TOKENS,
-} from "./bulletin-constants";
+import { BULLETIN_SYSTEM_PROMPT, BULLETIN_MODEL, BULLETIN_MAX_TOKENS } from "./bulletin-constants";
 import { buildBulletinPrompt, type SLFBulletinFeature } from "./bulletin-prompt";
 import { BulletinAnalysisSchema, type BulletinAnalysis } from "./bulletin-schema";
 
@@ -61,9 +57,7 @@ export async function analyseBulletin(
     }
 
     // Log the failure but retry if we have attempts left
-    console.warn(
-      `[analyse-bulletin] Attempt ${attempt + 1} failed: ${result.error}`,
-    );
+    console.warn(`[analyse-bulletin] Attempt ${attempt + 1} failed: ${result.error}`);
 
     if (attempt === retries) {
       throw new BulletinAnalysisError(
@@ -91,17 +85,15 @@ async function callClaude(userPrompt: string): Promise<string> {
 
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {
-    throw new BulletinAnalysisError(
-      "Claude response contained no text block",
-    );
+    throw new BulletinAnalysisError("Claude response contained no text block");
   }
 
   return textBlock.text;
 }
 
-function parseAndValidate(raw: string):
-  | { success: true; data: BulletinAnalysis }
-  | { success: false; error: string } {
+function parseAndValidate(
+  raw: string,
+): { success: true; data: BulletinAnalysis } | { success: false; error: string } {
   // Strip markdown fences if the model included them despite instructions
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, "")
@@ -120,9 +112,7 @@ function parseAndValidate(raw: string):
 
   const result = BulletinAnalysisSchema.safeParse(parsed);
   if (!result.success) {
-    const issues = result.error.issues
-      .map((i) => `${i.path.join(".")}: ${i.message}`)
-      .join("; ");
+    const issues = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return { success: false, error: `Zod validation failed: ${issues}` };
   }
 

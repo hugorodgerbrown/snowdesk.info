@@ -15,9 +15,13 @@ export default async function Home() {
 
   if (!latest) {
     return (
-      <main style={{ padding: "40px", maxWidth: "700px", margin: "0 auto", fontFamily: "sans-serif" }}>
+      <main
+        style={{ padding: "40px", maxWidth: "700px", margin: "0 auto", fontFamily: "sans-serif" }}
+      >
         <h1 style={{ fontSize: "28px", marginBottom: "8px" }}>Snowdesk</h1>
-        <p style={{ color: "#666" }}>No bulletin data yet. Run the poller to fetch today's forecast.</p>
+        <p style={{ color: "#666" }}>
+          No bulletin data yet. Run the poller to fetch today's forecast.
+        </p>
       </main>
     );
   }
@@ -35,7 +39,9 @@ export default async function Home() {
 
   if (allZones.length === 0) {
     return (
-      <main style={{ padding: "40px", maxWidth: "700px", margin: "0 auto", fontFamily: "sans-serif" }}>
+      <main
+        style={{ padding: "40px", maxWidth: "700px", margin: "0 auto", fontFamily: "sans-serif" }}
+      >
         <h1 style={{ fontSize: "28px", marginBottom: "8px" }}>Snowdesk</h1>
         <p style={{ color: "#666" }}>Bulletin stored — no zone data available.</p>
       </main>

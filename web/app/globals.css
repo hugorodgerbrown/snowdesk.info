@@ -1,29 +1,32 @@
 /* Fonts injected via next/font/google in layout.tsx */
 
 :root {
-  --cream:      #f5f0e8;
-  --ink:        #1a1612;
-  --ink-mid:    #4a4035;
-  --ink-light:  #8a7d6e;
-  --ink-faint:  #c5b9a8;
-  --alpine:     #2d4a3e;
-  --accent:     #c4722a;
-  --danger:     #8b2e2e;
-  --warn:       #7a5c1e;
-  --safe:       #2d4a3e;
+  --cream: #f5f0e8;
+  --ink: #1a1612;
+  --ink-mid: #4a4035;
+  --ink-light: #8a7d6e;
+  --ink-faint: #c5b9a8;
+  --alpine: #2d4a3e;
+  --accent: #c4722a;
+  --danger: #8b2e2e;
+  --warn: #7a5c1e;
+  --safe: #2d4a3e;
 
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-mono:    'DM Mono', 'Courier New', monospace;
-  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-mono: "DM Mono", "Courier New", monospace;
+  --font-body: "DM Sans", system-ui, sans-serif;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   min-height: 100%;
 }
 
@@ -39,7 +42,7 @@ body {
 
 /* Topographic grid overlay */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -63,7 +66,7 @@ body::before {
 
 /* Mountain silhouette — fixed to bottom */
 body::after {
-  content: '';
+  content: "";
   position: fixed;
   bottom: 0;
   left: 0;
@@ -78,7 +81,8 @@ body::after {
   background-repeat: no-repeat;
 }
 
-#__next, main {
+#__next,
+main {
   position: relative;
   z-index: 1;
 }

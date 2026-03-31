@@ -7,11 +7,7 @@ import { toSlug } from "../slug";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
-export default async function ZonePage({
-  params,
-}: {
-  params: Promise<{ zone: string }>;
-}) {
+export default async function ZonePage({ params }: { params: Promise<{ zone: string }> }) {
   const { zone } = await params;
 
   // Fetch the most recent bulletins and find the one matching this slug
@@ -21,7 +17,7 @@ export default async function ZonePage({
   });
 
   const bulletin = recentBulletins.find((b) =>
-    b.regionNames?.some((name) => toSlug(name) === zone)
+    b.regionNames?.some((name) => toSlug(name) === zone),
   );
 
   if (!bulletin) notFound();

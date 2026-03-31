@@ -170,25 +170,25 @@ Including one or two complete input→output pairs dramatically improves consist
 messages: [
   {
     role: "user",
-    content: "Analyse this SLF avalanche bulletin.\n\n<bulletin>..." // example input (danger 2, GO)
+    content: "Analyse this SLF avalanche bulletin.\n\n<bulletin>...", // example input (danger 2, GO)
   },
   {
     role: "assistant",
-    content: JSON.stringify(exampleOutputGo) // your gold-standard GO output
+    content: JSON.stringify(exampleOutputGo), // your gold-standard GO output
   },
   {
     role: "user",
-    content: "Analyse this SLF avalanche bulletin.\n\n<bulletin>..." // example input (danger 4, AVOID)
+    content: "Analyse this SLF avalanche bulletin.\n\n<bulletin>...", // example input (danger 4, AVOID)
   },
   {
     role: "assistant",
-    content: JSON.stringify(exampleOutputAvoid) // your gold-standard AVOID output
+    content: JSON.stringify(exampleOutputAvoid), // your gold-standard AVOID output
   },
   {
     role: "user",
-    content: actualBulletinPrompt // the real bulletin to analyse
-  }
-]
+    content: actualBulletinPrompt, // the real bulletin to analyse
+  },
+];
 ```
 
 Pick two contrasting examples — one low-danger day (GO/green) and one high-danger day (STAY_ON_PISTE or AVOID_BACKCOUNTRY/red). This anchors tone, length, and structure across the full range.
@@ -226,7 +226,7 @@ const response = await anthropic.messages.create({
   system: SYSTEM_PROMPT,
   messages: [
     // ...few-shot examples...
-    { role: "user", content: populatedUserPrompt }
+    { role: "user", content: populatedUserPrompt },
   ],
 });
 

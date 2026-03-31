@@ -54,9 +54,7 @@ export async function GET(request: Request) {
       return Response.json({ ok: false, error: "No bulletins from SLF API" });
     }
 
-    console.log(
-      `[POLLER] Fetched ${geojson.features.length} bulletins, processing...`
-    );
+    console.log(`[POLLER] Fetched ${geojson.features.length} bulletins, processing...`);
 
     const results = [];
 
@@ -74,9 +72,7 @@ export async function GET(request: Request) {
         });
 
         if (existing) {
-          console.log(
-            `[POLLER] Bulletin ${props.bulletinID} already exists, skipping`
-          );
+          console.log(`[POLLER] Bulletin ${props.bulletinID} already exists, skipping`);
           results.push({ bulletinId: props.bulletinID, status: "skipped" });
           continue;
         }
@@ -92,7 +88,7 @@ export async function GET(request: Request) {
       } catch (error) {
         console.error(
           `[POLLER] Error processing feature:`,
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : "Unknown error",
         );
         results.push({
           error: error instanceof Error ? error.message : "Unknown error",
@@ -114,7 +110,7 @@ export async function GET(request: Request) {
         ok: false,
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -162,7 +158,6 @@ async function fetchSLFBulletins() {
 
   return response.json();
 }
-
 
 async function storeBulletin(feature: SLFFeature, summary?: Record<string, unknown>) {
   const props = feature.properties;

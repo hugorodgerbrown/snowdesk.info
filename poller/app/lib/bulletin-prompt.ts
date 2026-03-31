@@ -81,26 +81,28 @@ export interface SLFBulletinFeature {
  * Preserves list structure as dash-prefixed lines and collapses whitespace.
  */
 export function stripHtml(html: string): string {
-  return html
-    // Block-level elements → newlines before stripping tags
-    .replace(/<\/h[1-6]>/gi, "\n\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<\/ul>/gi, "\n")
-    .replace(/<li>/gi, "- ")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    // Strip remaining tags
-    .replace(/<[^>]+>/g, "")
-    // Decode HTML entities
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    // Collapse whitespace
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return (
+    html
+      // Block-level elements → newlines before stripping tags
+      .replace(/<\/h[1-6]>/gi, "\n\n")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<\/ul>/gi, "\n")
+      .replace(/<li>/gi, "- ")
+      .replace(/<\/li>/gi, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      // Strip remaining tags
+      .replace(/<[^>]+>/g, "")
+      // Decode HTML entities
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&nbsp;/g, " ")
+      // Collapse whitespace
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -115,10 +117,7 @@ export function stripHtml(html: string): string {
  * @returns          The assembled prompt string
  * @throws           If regionId is not found in the bulletin's region list
  */
-export function buildBulletinPrompt(
-  feature: SLFBulletinFeature,
-  regionId: string,
-): string {
+export function buildBulletinPrompt(feature: SLFBulletinFeature, regionId: string): string {
   const p = feature.properties;
 
   // Resolve target region
@@ -131,9 +130,7 @@ export function buildBulletinPrompt(
   }
 
   // Format region list (compact, one line)
-  const regionList = p.regions
-    .map((r) => `${r.regionID} ${r.name}`)
-    .join(", ");
+  const regionList = p.regions.map((r) => `${r.regionID} ${r.name}`).join(", ");
 
   // Build the prompt
   return `Analyse this SLF avalanche bulletin.
