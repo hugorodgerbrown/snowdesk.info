@@ -2,6 +2,9 @@ import type { Bulletin } from "../../generated/prisma/client";
 
 interface BulletinAnalysis {
   date: string;
+  validFrom: string;
+  validTo: string;
+  nextUpdate: string;  // date of the next expected update
   overallVerdict: string;
   verdictColour: "green" | "amber" | "red";
   dangerLevel: string;

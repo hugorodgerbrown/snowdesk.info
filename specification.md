@@ -492,3 +492,94 @@ A topographic grid pattern is applied as a CSS `repeating-linear-gradient` on `b
 - Subscribers are never hard-deleted except via the unsubscribe flow. There is no admin interface.
 - The cron endpoint is idempotent — running it twice in the same slot will send duplicate emails to subscribers who received one in the first run. If deduplication is needed, check `send_log` before sending.
 - The SLF bulletin text is passed raw to Claude. No pre-processing or parsing is done. Claude is expected to extract weather values from the narrative text, which it does reliably for this domain.
+
+---
+
+## 15. Maintenance commands
+
+### 15.1 Trigger the poller manually
+
+Fetches the current SLF bulletin, deduplicates against existing rows, runs Claude summarisation on any new zones, and stores results.
+
+```bash
+# Development (auth bypassed when NODE_ENV=development)
+curl http://localhost:3000/poller/api/run
+
+# Production (requires CRON_SECRET)
+curl -H "Authorization: Bearer $CRON_SECRET" https://snowdesk.info/poller/api/run
+```
+
+### 15.2 Regenerate summaries
+
+`POST /poller/api/regenerate` re-runs Claude summarisation and writes the result back to the `summary` column.
+
+**Regenerate all bulletins with an empty summary** (default behaviour — skips rows that already have a non-empty summary):
+
+```bash
+# Development
+curl -X POST http://localhost:3000/poller/api/regenerate
+
+# Production
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://snowdesk.info/poller/api/regenerate
+```
+
+**Force-regenerate all bulletins**, including those that already have a summary:
+
+```bash
+curl -X POST "http://localhost:3000/poller/api/regenerate?force=true"
+```
+
+**Regenerate a single bulletin by ID:**
+
+```bash
+curl -X POST http://localhost:3000/poller/api/regenerate \
+  -H "Content-Type: application/json" \
+  -d '{ "bulletinId": "<uuid>" }'
+```
+
+**Combine — force-regenerate a single bulletin:**
+
+```bash
+curl -X POST "http://localhost:3000/poller/api/regenerate?force=true" \
+  -H "Content-Type: application/json" \
+  -d '{ "bulletinId": "<uuid>" }'
+```
+
+### 15.3 Inspect stored bulletins
+
+Use Prisma Studio or a direct SQL query to inspect the `Bulletin` table.
+
+```bash
+# Open Prisma Studio (browser UI at http://localhost:5555)
+npx prisma studio
+
+# Check how many bulletins have an empty summary
+psql $DATABASE_URL -c "SELECT count(*) FROM \"Bulletin\" WHERE summary = '{}'::jsonb;"
+
+# List the most recent 10 bulletins with their zone IDs and issued timestamps
+psql $DATABASE_URL -c "
+  SELECT \"bulletinId\", \"issuedAt\", \"nextUpdate\",
+         array_length(\"regionNames\", 1) AS region_count
+  FROM \"Bulletin\"
+  ORDER BY \"issuedAt\" DESC NULLS LAST
+  LIMIT 10;
+"
+
+# Find bulletins for a specific region name (case-insensitive)
+psql $DATABASE_URL -c "
+  SELECT \"bulletinId\", \"issuedAt\", \"regionNames\"
+  FROM \"Bulletin\"
+  WHERE \"regionNames\" && ARRAY['Davos']
+  ORDER BY \"issuedAt\" DESC;
+"
+```
+
+### 15.4 Clear all bulletins (destructive)
+
+Only use this to reset the database during development or to force a full re-fetch.
+
+```bash
+psql $DATABASE_URL -c 'TRUNCATE TABLE "Bulletin" CASCADE;'
+```
+
+After truncating, re-run the poller (`/poller/api/run`) to repopulate from the live SLF feed.

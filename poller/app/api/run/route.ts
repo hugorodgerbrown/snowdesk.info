@@ -1,6 +1,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Prisma } from "../../../../generated/prisma/client";
 import { generateSummary } from "../../lib/generate-summary";
+import { stripHtml } from "../../lib/html";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -79,8 +80,9 @@ export async function GET(request: Request) {
           continue;
         }
 
-        const summary = await generateSummary(props);
-        const bulletin = await storeBulletin(featureBulletin, summary);
+        const processed = processComments(featureBulletin);
+        const summary = await generateSummary(processed.properties);
+        const bulletin = await storeBulletin(processed, summary);
 
         console.log(`[POLLER] Stored bulletin ${bulletin.id}`);
         results.push({ bulletinId: bulletin.id, status: "stored" });
@@ -112,6 +114,36 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Deep-clones the feature and, for every "comment" field in the SLF
+ * properties that contains HTML, adds a sibling "commentHtml" field with
+ * the original value and replaces "comment" with the plain-text version.
+ *
+ * Fields processed:
+ *   properties.weatherForecast.comment
+ *   properties.weatherReview.comment
+ *   properties.snowpackStructure.comment
+ *   properties.tendency[].comment
+ *   properties.avalancheProblems[].comment
+ */
+function processComments(feature: SLFFeature): SLFFeature {
+  const f = JSON.parse(JSON.stringify(feature)) as SLFFeature;
+  const p = f.properties;
+
+  const strip = (obj: { comment: string; commentHtml?: string }) => {
+    obj.commentHtml = obj.comment;
+    obj.comment = stripHtml(obj.comment);
+  };
+
+  if (p.weatherForecast) strip(p.weatherForecast);
+  if (p.weatherReview) strip(p.weatherReview);
+  if (p.snowpackStructure) strip(p.snowpackStructure);
+  p.tendency?.forEach(strip);
+  p.avalancheProblems?.forEach(strip);
+
+  return f;
 }
 
 async function fetchSLFBulletins() {
