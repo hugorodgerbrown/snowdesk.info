@@ -1,6 +1,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Prisma } from "../../../../generated/prisma/client";
-import { generateSummary } from "../../lib/generate-summary";
+import { analyseBulletin } from "../../lib/analyse-bulletin";
+import { toDisplaySummary } from "../../lib/to-display-summary";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -60,8 +61,10 @@ export async function POST(request: Request) {
     const results = [];
     for (const bulletin of toProcess) {
       try {
-        const rawData = bulletin.rawData as unknown as { properties: Parameters<typeof generateSummary>[0] };
-        const summary = await generateSummary(rawData.properties);
+        const regionId = bulletin.regionIds[0];
+        if (!regionId) throw new Error("Bulletin has no regionIds");
+        const analysis = await analyseBulletin(bulletin.rawData as never, regionId);
+        const summary = toDisplaySummary(analysis);
 
         await prisma.bulletin.update({
           where: { id: bulletin.id },

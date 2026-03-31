@@ -1,7 +1,8 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Prisma } from "../../../../generated/prisma/client";
-import { generateSummary } from "../../lib/generate-summary";
-import { stripHtml } from "../../lib/html";
+import { analyseBulletin } from "../../lib/analyse-bulletin";
+import { stripHtml } from "../../lib/bulletin-prompt";
+import { toDisplaySummary } from "../../lib/to-display-summary";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -81,8 +82,10 @@ export async function GET(request: Request) {
         }
 
         const processed = processComments(featureBulletin);
-        const summary = await generateSummary(processed.properties);
-        const bulletin = await storeBulletin(processed, summary);
+        const regionId = props.regions[0]?.regionID;
+        if (!regionId) throw new Error("Bulletin has no regions");
+        const analysis = await analyseBulletin(processed as never, regionId);
+        const bulletin = await storeBulletin(processed, toDisplaySummary(analysis));
 
         console.log(`[POLLER] Stored bulletin ${bulletin.id}`);
         results.push({ bulletinId: bulletin.id, status: "stored" });

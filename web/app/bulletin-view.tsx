@@ -12,7 +12,7 @@ interface BulletinAnalysis {
   onPiste: { rating: string; notes: string };
   offPiste: { rating: string; notes: string };
   skiTouring: { rating: string; notes: string };
-  keyHazards: string[];
+  keyHazards: string[];  //
   bestBets: string[];
   outlook: string;
   weather: {
