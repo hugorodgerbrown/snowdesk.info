@@ -24,141 +24,140 @@ interface BulletinAnalysis {
   };
 }
 
-const VERDICT_STYLES: Record<string, { bg: string; border: string; text: string }> = {
-  green: { bg: "#f0fdf4", border: "#16a34a", text: "#15803d" },
-  amber: { bg: "#fffbeb", border: "#d97706", text: "#b45309" },
-  red:   { bg: "#fef2f2", border: "#dc2626", text: "#b91c1c" },
+const VERDICT: Record<string, { border: string; text: string; bg: string; label: string }> = {
+  green: { border: "var(--safe)",   text: "var(--safe)",   bg: "rgba(45,74,62,0.06)",   label: "GO" },
+  amber: { border: "var(--warn)",   text: "var(--warn)",   bg: "rgba(122,92,30,0.06)",  label: "CAUTION" },
+  red:   { border: "var(--danger)", text: "var(--danger)", bg: "rgba(139,46,46,0.06)",  label: "AVOID" },
 };
+
+const mono: React.CSSProperties = { fontFamily: "var(--font-mono)", letterSpacing: "0.04em" };
+const label: React.CSSProperties = { ...mono, fontSize: "10px", textTransform: "uppercase", color: "var(--ink-light)", marginBottom: "6px" };
+const card: React.CSSProperties = { padding: "16px", border: "1px solid var(--ink-faint)", borderRadius: "2px", background: "rgba(245,240,232,0.7)" };
 
 export function BulletinView({ bulletin }: { bulletin: Bulletin }) {
   const a = bulletin.summary as unknown as BulletinAnalysis;
 
   if (!a.overallVerdict) {
     return (
-      <main style={{ padding: "40px", maxWidth: "700px", margin: "0 auto", fontFamily: "sans-serif" }}>
-        <h1 style={{ fontSize: "28px", marginBottom: "8px" }}>Snowdesk</h1>
-        <p style={{ color: "#666" }}>Bulletin stored — summary pending.</p>
+      <main style={{ padding: "40px", maxWidth: "700px", margin: "0 auto" }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "32px", color: "var(--ink)" }}>Snowdesk</h1>
+        <p style={{ color: "var(--ink-light)", marginTop: "12px" }}>Bulletin stored — summary pending.</p>
       </main>
     );
   }
 
-  const verdictStyle = VERDICT_STYLES[a.verdictColour] ?? VERDICT_STYLES.amber;
+  const v = VERDICT[a.verdictColour] ?? VERDICT.amber;
 
   return (
-    <main style={{ padding: "24px", maxWidth: "760px", margin: "0 auto", fontFamily: "sans-serif", color: "#1a1a1a" }}>
+    <main style={{ padding: "clamp(20px, 5vw, 48px)", maxWidth: "780px", margin: "0 auto" }}>
 
-      {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>Snowdesk</h1>
-        <p style={{ color: "#888", fontSize: "13px", margin: "4px 0 0" }}>
-          {a.date} · {bulletin.regionNames?.join(", ")}
+      {/* Masthead */}
+      <header style={{ marginBottom: "32px", paddingBottom: "20px", borderBottom: "1px solid var(--ink-faint)" }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 700, color: "var(--alpine)", lineHeight: 1.1 }}>
+          Snowdesk
+        </h1>
+        <p style={{ color: "var(--ink-mid)", fontSize: "14px", marginTop: "6px" }}>
+          {bulletin.regionNames?.join(" · ")}
         </p>
-        <p style={{ color: "#aaa", fontSize: "12px", margin: "2px 0 0" }}>
+        <p style={{ ...mono, color: "var(--ink-light)", fontSize: "11px", marginTop: "4px" }}>
           Issued {bulletin.issuedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
           {bulletin.nextUpdate && (
-            <> · Next update {bulletin.nextUpdate.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</>
+            <> &nbsp;·&nbsp; Next update {bulletin.nextUpdate.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</>
           )}
         </p>
-      </div>
+      </header>
 
       {/* Verdict banner */}
-      <div style={{
-        padding: "20px 24px",
-        marginBottom: "20px",
-        backgroundColor: verdictStyle.bg,
-        border: `2px solid ${verdictStyle.border}`,
-        borderRadius: "8px",
+      <section style={{
+        ...card,
+        padding: "24px 28px",
+        marginBottom: "24px",
+        borderColor: v.border,
+        borderWidth: "2px",
+        background: v.bg,
       }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "8px" }}>
-          <span style={{ fontSize: "22px", fontWeight: 700, color: verdictStyle.text }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "14px", marginBottom: "10px" }}>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 4vw, 30px)", fontWeight: 700, color: v.text }}>
             {a.overallVerdict}
           </span>
-          <span style={{ fontSize: "14px", color: "#555" }}>{a.dangerLevel}</span>
+          <span style={{ ...mono, fontSize: "12px", color: "var(--ink-mid)" }}>{a.dangerLevel}</span>
         </div>
-        <p style={{ margin: 0, fontSize: "15px", lineHeight: "1.6", color: "#333" }}>{a.summary}</p>
-      </div>
+        <p style={{ fontSize: "15px", lineHeight: "1.7", color: "var(--ink)" }}>{a.summary}</p>
+      </section>
 
       {/* Activity ratings */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "20px" }}>
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "24px" }}>
         {[
-          { label: "On Piste", data: a.onPiste },
-          { label: "Off Piste", data: a.offPiste },
+          { label: "On Piste",    data: a.onPiste },
+          { label: "Off Piste",   data: a.offPiste },
           { label: "Ski Touring", data: a.skiTouring },
-        ].map(({ label, data }) => (
-          <div key={label} style={{
-            padding: "14px",
-            backgroundColor: "#f9f9f9",
-            border: "1px solid #e5e5e5",
-            borderRadius: "6px",
-          }}>
-            <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888", marginBottom: "4px" }}>{label}</div>
-            <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>{data.rating}</div>
-            <div style={{ fontSize: "12px", color: "#555", lineHeight: "1.5" }}>{data.notes}</div>
+        ].map(({ label: lbl, data }) => (
+          <div key={lbl} style={card}>
+            <div style={label}>{lbl}</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: "17px", fontWeight: 600, color: "var(--ink)", marginBottom: "8px" }}>
+              {data.rating}
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--ink-mid)", lineHeight: "1.6" }}>{data.notes}</div>
           </div>
         ))}
-      </div>
+      </section>
 
-      {/* Key hazards + Best bets */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
-        <div style={{ padding: "16px", backgroundColor: "#fff8f0", border: "1px solid #f0ad4e", borderRadius: "6px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#b45309", marginBottom: "10px" }}>
-            Key Hazards
-          </div>
-          <ul style={{ margin: 0, padding: "0 0 0 16px" }}>
+      {/* Hazards + Best bets */}
+      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "24px" }}>
+        <div style={{ ...card, borderColor: "var(--accent)" }}>
+          <div style={{ ...label, color: "var(--accent)" }}>Key Hazards</div>
+          <ul style={{ paddingLeft: "16px" }}>
             {a.keyHazards.map((h, i) => (
-              <li key={i} style={{ fontSize: "13px", lineHeight: "1.6", marginBottom: "4px" }}>{h}</li>
+              <li key={i} style={{ fontSize: "13px", lineHeight: "1.7", color: "var(--ink-mid)", marginBottom: "2px" }}>{h}</li>
             ))}
           </ul>
         </div>
-        <div style={{ padding: "16px", backgroundColor: "#f0fdf4", border: "1px solid #86efac", borderRadius: "6px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#15803d", marginBottom: "10px" }}>
-            Best Bets
-          </div>
-          <ul style={{ margin: 0, padding: "0 0 0 16px" }}>
+        <div style={{ ...card, borderColor: "var(--alpine)" }}>
+          <div style={{ ...label, color: "var(--alpine)" }}>Best Bets</div>
+          <ul style={{ paddingLeft: "16px" }}>
             {a.bestBets.map((b, i) => (
-              <li key={i} style={{ fontSize: "13px", lineHeight: "1.6", marginBottom: "4px" }}>{b}</li>
+              <li key={i} style={{ fontSize: "13px", lineHeight: "1.7", color: "var(--ink-mid)", marginBottom: "2px" }}>{b}</li>
             ))}
           </ul>
         </div>
-      </div>
+      </section>
 
       {/* Weather */}
-      <div style={{ marginBottom: "20px", padding: "16px", backgroundColor: "#f5f8ff", border: "1px solid #c7d7f9", borderRadius: "6px" }}>
-        <div style={{ fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#3b5bdb", marginBottom: "12px" }}>
-          Weather
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+      <section style={{ ...card, marginBottom: "24px" }}>
+        <div style={label}>Weather</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "16px" }}>
           {[
-            { label: "Summit", value: a.weather.summitTemp },
-            { label: "Mid", value: a.weather.midTemp },
-            { label: "Resort", value: a.weather.resortTemp },
-            { label: "Freezing", value: a.weather.freezingLevel },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "11px", color: "#888", marginBottom: "2px" }}>{label}</div>
-              <div style={{ fontSize: "15px", fontWeight: 600 }}>{value}</div>
+            { lbl: "Summit",   val: a.weather.summitTemp },
+            { lbl: "Mid",      val: a.weather.midTemp },
+            { lbl: "Resort",   val: a.weather.resortTemp },
+            { lbl: "Freezing", val: a.weather.freezingLevel },
+          ].map(({ lbl, val }) => (
+            <div key={lbl} style={{ textAlign: "center" }}>
+              <div style={{ ...mono, fontSize: "9px", textTransform: "uppercase", color: "var(--ink-light)", marginBottom: "4px" }}>{lbl}</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 600, color: "var(--ink)" }}>{val}</div>
             </div>
           ))}
         </div>
-        <div style={{ marginTop: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+        <div style={{ borderTop: "1px solid var(--ink-faint)", paddingTop: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
           {[
-            { label: "Wind", value: a.weather.wind },
-            { label: "Visibility", value: a.weather.visibility },
-            { label: "New snow (24h)", value: a.weather.newSnow24h },
-            { label: "Base depth", value: a.weather.baseDepth },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ fontSize: "13px" }}>
-              <span style={{ color: "#888" }}>{label}: </span>
-              <span style={{ fontWeight: 500 }}>{value}</span>
+            { lbl: "Wind",          val: a.weather.wind,       accent: true },
+            { lbl: "Visibility",    val: a.weather.visibility,  accent: true },
+            { lbl: "New snow (24h)", val: a.weather.newSnow24h, accent: false },
+            { lbl: "Base depth",    val: a.weather.baseDepth,   accent: false },
+          ].map(({ lbl, val, accent: isAccent }) => (
+            <div key={lbl} style={{ fontSize: "13px" }}>
+              <span style={{ ...mono, fontSize: "10px", color: "var(--ink-light)" }}>{lbl} </span>
+              <span style={{ fontWeight: 500, color: isAccent ? "var(--accent)" : "var(--ink)" }}>{val}</span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Outlook */}
-      <div style={{ padding: "14px 16px", backgroundColor: "#fafafa", border: "1px solid #e5e5e5", borderRadius: "6px", fontSize: "14px", lineHeight: "1.6", color: "#444" }}>
-        <span style={{ fontWeight: 600, color: "#1a1a1a" }}>Outlook: </span>{a.outlook}
-      </div>
+      <section style={{ ...card, borderLeft: "3px solid var(--alpine)", paddingLeft: "20px" }}>
+        <div style={label}>Outlook</div>
+        <p style={{ fontSize: "14px", lineHeight: "1.7", color: "var(--ink-mid)" }}>{a.outlook}</p>
+      </section>
 
     </main>
   );

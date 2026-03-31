@@ -1,0 +1,84 @@
+/* Fonts injected via next/font/google in layout.tsx */
+
+:root {
+  --cream:      #f5f0e8;
+  --ink:        #1a1612;
+  --ink-mid:    #4a4035;
+  --ink-light:  #8a7d6e;
+  --ink-faint:  #c5b9a8;
+  --alpine:     #2d4a3e;
+  --accent:     #c4722a;
+  --danger:     #8b2e2e;
+  --warn:       #7a5c1e;
+  --safe:       #2d4a3e;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono:    'DM Mono', 'Courier New', monospace;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* Topographic grid overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(45, 74, 62, 0.12) 39px,
+      rgba(45, 74, 62, 0.12) 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 39px,
+      rgba(45, 74, 62, 0.12) 39px,
+      rgba(45, 74, 62, 0.12) 40px
+    );
+}
+
+/* Mountain silhouette — fixed to bottom */
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 220px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220' preserveAspectRatio='xMidYMax slice'%3E%3Cpath fill='%231a1612' d='M0 220 L120 140 L200 170 L320 80 L420 130 L520 60 L600 100 L680 40 L760 90 L860 20 L940 70 L1040 10 L1120 60 L1200 30 L1300 80 L1380 50 L1440 90 L1440 220 Z'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: bottom center;
+  background-repeat: no-repeat;
+}
+
+#__next, main {
+  position: relative;
+  z-index: 1;
+}
