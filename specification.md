@@ -49,13 +49,13 @@ From top to bottom:
 
 ### 2.2 Sign-up form fields
 
-| Field | Type | Options | Notes |
-|---|---|---|---|
-| Email | email input | — | Required |
-| Region area | select | 17 areas across Swiss Alps | Required. See region map in §6 |
-| Sub-region | select | Populated dynamically from area selection | Optional. Defaults to first code in area |
-| Skiing style | checkbox tiles | On-piste, Off-piste / powder, Ski touring | Multi-select. At least one required |
-| Delivery | radio tiles | Morning only (08:15 CET), Evening only (17:15 CET), Both | Single-select. Default: Morning |
+| Field        | Type           | Options                                                  | Notes                                    |
+| ------------ | -------------- | -------------------------------------------------------- | ---------------------------------------- |
+| Email        | email input    | —                                                        | Required                                 |
+| Region area  | select         | 17 areas across Swiss Alps                               | Required. See region map in §6           |
+| Sub-region   | select         | Populated dynamically from area selection                | Optional. Defaults to first code in area |
+| Skiing style | checkbox tiles | On-piste, Off-piste / powder, Ski touring                | Multi-select. At least one required      |
+| Delivery     | radio tiles    | Morning only (08:15 CET), Evening only (17:15 CET), Both | Single-select. Default: Morning          |
 
 On submit, the form POSTs to `/api/subscribe`. On success, it shows a confirmation panel. The user must click a link in a confirmation email before they receive briefings.
 
@@ -124,6 +124,7 @@ Validates input, upserts a subscriber row in Supabase, and sends a confirmation 
 ```
 
 **Validation:**
+
 - `email` — valid email format
 - `region_area` — must exist in REGION_MAP
 - `styles` — array of `"piste" | "offpiste" | "touring"`, min length 1
@@ -152,6 +153,7 @@ Deletes the subscriber row matching the token. Redirects to `/?unsubscribed=true
 Returns a cached `BulletinAnalysis` for Verbier region 4116, used to populate the live preview card on the sign-up page.
 
 **Logic:**
+
 1. Query `bulletin_previews` table for `region_code = '4116'`, ordered by `cached_at` descending
 2. If a row exists, return `{ analysis, cached_at, source: "cache" }`
 3. If not (first ever load, before cron has run), fetch live from SLF and call Claude, write result to `bulletin_previews`, return `{ analysis, source: "live" }`
@@ -160,13 +162,14 @@ Returns a cached `BulletinAnalysis` for Verbier region 4116, used to populate th
 
 ---
 
-### `GET /api/cron/send` *(protected)*
+### `GET /api/cron/send` _(protected)_
 
 The daily send job. Called by Vercel's cron scheduler at 07:15 UTC and 16:15 UTC (08:15 and 17:15 CET). Also callable manually.
 
 **Authentication:** `Authorization: Bearer <CRON_SECRET>` header required. Returns 401 if missing or incorrect.
 
 **Logic:**
+
 1. Determine slot (`morning` if UTC hour < 12, else `evening`)
 2. Warm the preview cache for Verbier 4116 (always, regardless of subscribers)
 3. Fetch all confirmed subscribers where `delivery = slot` or `delivery = 'both'`
@@ -232,51 +235,51 @@ The structured JSON object produced by Claude and stored in `bulletin_previews.a
 
 ```typescript
 interface BulletinAnalysis {
-  date: string                          // e.g. "26 March 2026"
-  overallVerdict: string                // "GO" | "CAUTION" | "STAY ON PISTE" | "AVOID BACKCOUNTRY"
-  verdictColour: "green" | "amber" | "red"
-  dangerLevel: string                   // e.g. "Considerable (3+)"
-  summary: string                       // 2-3 sentences
-  onPiste:    { rating: string; notes: string }
-  offPiste:   { rating: string; notes: string }
-  skiTouring: { rating: string; notes: string }
-  keyHazards: string[]                  // 2-4 items
-  bestBets:   string[]                  // 1-3 items
-  outlook: string                       // 1-2 sentences
+  date: string; // e.g. "26 March 2026"
+  overallVerdict: string; // "GO" | "CAUTION" | "STAY ON PISTE" | "AVOID BACKCOUNTRY"
+  verdictColour: "green" | "amber" | "red";
+  dangerLevel: string; // e.g. "Considerable (3+)"
+  summary: string; // 2-3 sentences
+  onPiste: { rating: string; notes: string };
+  offPiste: { rating: string; notes: string };
+  skiTouring: { rating: string; notes: string };
+  keyHazards: string[]; // 2-4 items
+  bestBets: string[]; // 1-3 items
+  outlook: string; // 1-2 sentences
   weather: {
-    summitTemp:    string               // e.g. "−10°C"
-    midTemp:       string               // e.g. "−4°C"
-    resortTemp:    string               // e.g. "0°C"
-    freezingLevel: string               // e.g. "~1000m"
-    wind:          string               // e.g. "Storm NNW 80 km/h"
-    visibility:    string               // e.g. "Poor — heavy snowfall"
-    newSnow24h:    string               // e.g. "40–60 cm"
-    baseDepth:     string               // e.g. "200–240 cm (upper mountain)"
-  }
+    summitTemp: string; // e.g. "−10°C"
+    midTemp: string; // e.g. "−4°C"
+    resortTemp: string; // e.g. "0°C"
+    freezingLevel: string; // e.g. "~1000m"
+    wind: string; // e.g. "Storm NNW 80 km/h"
+    visibility: string; // e.g. "Poor — heavy snowfall"
+    newSnow24h: string; // e.g. "40–60 cm"
+    baseDepth: string; // e.g. "200–240 cm (upper mountain)"
+  };
 }
 ```
 
 ### Rating values
 
-| Field | Possible values |
-|---|---|
-| `onPiste.rating` | Excellent, Good, Fair, Poor, Closed |
-| `offPiste.rating` | Epic, Good, Risky, Very Risky, Avoid |
+| Field               | Possible values                        |
+| ------------------- | -------------------------------------- |
+| `onPiste.rating`    | Excellent, Good, Fair, Poor, Closed    |
+| `offPiste.rating`   | Epic, Good, Risky, Very Risky, Avoid   |
 | `skiTouring.rating` | Ideal, Acceptable, Experts Only, Avoid |
 
 ### `Subscriber`
 
 ```typescript
 interface Subscriber {
-  id: string
-  email: string
-  region_area: string                   // slug, e.g. "verbier"
-  region_code: string | null            // SLF code, e.g. "4116"
-  styles: ("piste" | "offpiste" | "touring")[]
-  delivery: "morning" | "evening" | "both"
-  confirmed: boolean
-  unsubscribe_token: string             // 64-char hex, used in email links
-  created_at: string
+  id: string;
+  email: string;
+  region_area: string; // slug, e.g. "verbier"
+  region_code: string | null; // SLF code, e.g. "4116"
+  styles: ("piste" | "offpiste" | "touring")[];
+  delivery: "morning" | "evening" | "both";
+  confirmed: boolean;
+  unsubscribe_token: string; // 64-char hex, used in email links
+  created_at: string;
 }
 ```
 
@@ -290,10 +293,10 @@ The official Swiss avalanche bulletin, published by the WSL Institute for Snow a
 
 **Base URL:** `https://aws.slf.ch/api/bulletin/document`
 
-| Endpoint | Description |
-|---|---|
-| `/full/en` | Complete national bulletin PDF (all regions) |
-| `/regional/en/{regionCode}` | Single-region bulletin PDF |
+| Endpoint                    | Description                                  |
+| --------------------------- | -------------------------------------------- |
+| `/full/en`                  | Complete national bulletin PDF (all regions) |
+| `/regional/en/{regionCode}` | Single-region bulletin PDF                   |
 
 Bulletins update twice daily: **08:00 CET** and **17:00 CET**. The API returns a PDF which can be read as text. No authentication required. No rate limiting documented, but requests should be batched — one fetch per unique region code per cron run.
 
@@ -332,40 +335,40 @@ PostgreSQL database and authentication. Two clients are used:
 
 Each area slug maps to one or more SLF region codes. The first code in the array is the default when no sub-region is selected.
 
-| Area slug | Area label | Region codes |
-|---|---|---|
-| `verbier` | Verbier / 4 Vallées | 4115 (Martigny–Verbier), 4116 (Haut Val de Bagnes) |
-| `zermatt` | Zermatt / Saas Fee | 4222 (Zermatt), 4223 (Saas Fee), 4224 (Monte Rosa) |
-| `crans` | Crans-Montana | 4121 (Montana), 4124 (Val d'Anniviers) |
-| `saas` | Saas / Simplon | 4231 (N. Simplon), 4232 (S. Simplon) |
-| `obergoms` | Obergoms / Aletsch | 4241 (Reckingen), 4243 (N. Obergoms), 4244 (S. Obergoms) |
+| Area slug     | Area label             | Region codes                                                         |
+| ------------- | ---------------------- | -------------------------------------------------------------------- |
+| `verbier`     | Verbier / 4 Vallées    | 4115 (Martigny–Verbier), 4116 (Haut Val de Bagnes)                   |
+| `zermatt`     | Zermatt / Saas Fee     | 4222 (Zermatt), 4223 (Saas Fee), 4224 (Monte Rosa)                   |
+| `crans`       | Crans-Montana          | 4121 (Montana), 4124 (Val d'Anniviers)                               |
+| `saas`        | Saas / Simplon         | 4231 (N. Simplon), 4232 (S. Simplon)                                 |
+| `obergoms`    | Obergoms / Aletsch     | 4241 (Reckingen), 4243 (N. Obergoms), 4244 (S. Obergoms)             |
 | `grindelwald` | Grindelwald / Jungfrau | 1242 (Grindelwald), 1234 (Jungfrau–Schilthorn), 1233 (Lauterbrunnen) |
-| `adelboden` | Adelboden / Lenk | 1226 (Adelboden), 1224 (Lenk), 1227 (Engstligen) |
-| `gstaad` | Gstaad | 1222 (Gstaad), 1223 (Wildhorn) |
-| `kandersteg` | Kandersteg | 1231 (Kandersteg), 1232 (Blüemlisalp) |
-| `davos` | Davos / Klosters | 5123 (Davos), 5122 (Schanfigg), 5111 (N. Prättigau) |
-| `stmoritz` | St. Moritz / Engadine | 7114 (St Moritz), 7111 (Corvatsch), 7112 (Bernina) |
-| `laax` | Laax / Flims | 5124 (Flims), 5214 (Obersaxen–Safien) |
-| `arosa` | Arosa / Lenzerheide | 5221 (Domleschg–Lenzerheide), 5231 (Albulatal) |
-| `andermatt` | Andermatt / Sedrun | 2223 (N. Urseren), 2224 (S. Urseren), 2221 (Meiental) |
-| `engelberg` | Engelberg | 2122 (Engelberg), 2121 (Glaubenberg) |
-| `lugano` | Lugano area | 6131 (Lugano area), 6132 (Mendrisio) |
-| `leventina` | Leventina / Blenio | 6112 (Upper Leventina), 6113 (Val Blenio) |
+| `adelboden`   | Adelboden / Lenk       | 1226 (Adelboden), 1224 (Lenk), 1227 (Engstligen)                     |
+| `gstaad`      | Gstaad                 | 1222 (Gstaad), 1223 (Wildhorn)                                       |
+| `kandersteg`  | Kandersteg             | 1231 (Kandersteg), 1232 (Blüemlisalp)                                |
+| `davos`       | Davos / Klosters       | 5123 (Davos), 5122 (Schanfigg), 5111 (N. Prättigau)                  |
+| `stmoritz`    | St. Moritz / Engadine  | 7114 (St Moritz), 7111 (Corvatsch), 7112 (Bernina)                   |
+| `laax`        | Laax / Flims           | 5124 (Flims), 5214 (Obersaxen–Safien)                                |
+| `arosa`       | Arosa / Lenzerheide    | 5221 (Domleschg–Lenzerheide), 5231 (Albulatal)                       |
+| `andermatt`   | Andermatt / Sedrun     | 2223 (N. Urseren), 2224 (S. Urseren), 2221 (Meiental)                |
+| `engelberg`   | Engelberg              | 2122 (Engelberg), 2121 (Glaubenberg)                                 |
+| `lugano`      | Lugano area            | 6131 (Lugano area), 6132 (Mendrisio)                                 |
+| `leventina`   | Leventina / Blenio     | 6112 (Upper Leventina), 6113 (Val Blenio)                            |
 
 ---
 
 ## 9. Environment variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key (safe for browser) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (server only) |
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key |
-| `RESEND_API_KEY` | Yes | Resend API key |
-| `RESEND_FROM_ADDRESS` | Yes | Verified sender address, e.g. `briefings@snowdesk.co` |
-| `CRON_SECRET` | Yes | Random secret to protect the cron endpoint |
-| `NEXT_PUBLIC_APP_URL` | Yes | Public URL of the deployed app, e.g. `https://snowdesk.co` |
+| Variable                        | Required | Description                                                |
+| ------------------------------- | -------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Yes      | Supabase project URL                                       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes      | Supabase anon key (safe for browser)                       |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Yes      | Supabase service role key (server only)                    |
+| `ANTHROPIC_API_KEY`             | Yes      | Anthropic API key                                          |
+| `RESEND_API_KEY`                | Yes      | Resend API key                                             |
+| `RESEND_FROM_ADDRESS`           | Yes      | Verified sender address, e.g. `briefings@snowdesk.co`      |
+| `CRON_SECRET`                   | Yes      | Random secret to protect the cron endpoint                 |
+| `NEXT_PUBLIC_APP_URL`           | Yes      | Public URL of the deployed app, e.g. `https://snowdesk.co` |
 
 ---
 
@@ -373,10 +376,10 @@ Each area slug maps to one or more SLF region codes. The first code in the array
 
 Two runs per day, fired 15 minutes after each SLF bulletin publication:
 
-| Slot | CET | UTC | cron expression |
-|---|---|---|---|
-| Morning | 08:15 | 07:15 | `15 7 * * *` |
-| Evening | 17:15 | 16:15 | `15 16 * * *` |
+| Slot    | CET   | UTC   | cron expression |
+| ------- | ----- | ----- | --------------- |
+| Morning | 08:15 | 07:15 | `15 7 * * *`    |
+| Evening | 17:15 | 16:15 | `15 16 * * *`   |
 
 Note: UTC times do not account for daylight saving time. During CEST (late March–late October), CET is UTC+2, so the morning slot would need to be `15 6 * * *` and evening `15 15 * * *` for strict 15-minute accuracy. This is a known limitation and can be addressed with a timezone-aware scheduler if precision matters.
 
@@ -387,6 +390,7 @@ Note: UTC times do not account for daylight saving time. During CEST (late March
 ### Confirmation email
 
 Sent immediately on sign-up. Contains:
+
 - Region name and delivery preference summary
 - A single CTA button linking to `/api/confirm?token=<unsubscribe_token>`
 - Note that the email can be ignored if the user didn't sign up
@@ -457,26 +461,26 @@ The sign-up page uses a bespoke design system. Key values for migration:
 
 ### Colour palette
 
-| Token | Value | Usage |
-|---|---|---|
-| `--cream` | `#f5f0e8` | Page background |
-| `--ink` | `#1a1612` | Primary text, borders |
-| `--ink-mid` | `#4a4035` | Secondary text |
-| `--ink-light` | `#8a7d6e` | Labels, hints |
-| `--ink-faint` | `#c5b9a8` | Borders, dividers |
-| `--alpine` | `#2d4a3e` | Brand green — CTAs, active states, links |
-| `--accent` | `#c4722a` | Warning values (wind, visibility) |
-| `--danger` | `#8b2e2e` | Danger/avoid states |
-| `--warn` | `#7a5c1e` | Caution states |
-| `--safe` | `#2d4a3e` | Go/good states |
+| Token         | Value     | Usage                                    |
+| ------------- | --------- | ---------------------------------------- |
+| `--cream`     | `#f5f0e8` | Page background                          |
+| `--ink`       | `#1a1612` | Primary text, borders                    |
+| `--ink-mid`   | `#4a4035` | Secondary text                           |
+| `--ink-light` | `#8a7d6e` | Labels, hints                            |
+| `--ink-faint` | `#c5b9a8` | Borders, dividers                        |
+| `--alpine`    | `#2d4a3e` | Brand green — CTAs, active states, links |
+| `--accent`    | `#c4722a` | Warning values (wind, visibility)        |
+| `--danger`    | `#8b2e2e` | Danger/avoid states                      |
+| `--warn`      | `#7a5c1e` | Caution states                           |
+| `--safe`      | `#2d4a3e` | Go/good states                           |
 
 ### Typography
 
-| Role | Font | Weight | Size |
-|---|---|---|---|
+| Role               | Font                            | Weight        | Size            |
+| ------------------ | ------------------------------- | ------------- | --------------- |
 | Display / headings | Playfair Display (Google Fonts) | 400, 600, 700 | 18–58px (clamp) |
-| Monospace labels | DM Mono (Google Fonts) | 300, 400, 500 | 9–13px |
-| Body / UI | DM Sans (Google Fonts) | 300, 400, 500 | 12–15px |
+| Monospace labels   | DM Mono (Google Fonts)          | 300, 400, 500 | 9–13px          |
+| Body / UI          | DM Sans (Google Fonts)          | 300, 400, 500 | 12–15px         |
 
 ### Background
 

@@ -11,16 +11,17 @@ Snowdesk is a Vercel Services application that polls the Swiss avalanche authori
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Next.js, React, TypeScript |
-| Backend | Next.js API routes, Prisma 7.6.0 |
-| Database | Supabase PostgreSQL, pg driver |
-| AI | Anthropic Claude API (Sonnet 4) |
-| Email | Resend |
-| CSS | CSS custom properties (no framework) |
+| Layer    | Technology                           |
+| -------- | ------------------------------------ |
+| Frontend | Next.js, React, TypeScript           |
+| Backend  | Next.js API routes, Prisma 7.6.0     |
+| Database | Supabase PostgreSQL, pg driver       |
+| AI       | Anthropic Claude API (Sonnet 4)      |
+| Email    | Resend                               |
+| CSS      | CSS custom properties (no framework) |
 
-**Not configured**: ESLint, Prettier, Jest/Vitest, pre-commit hooks.
+**Code quality**: ESLint (flat config), Prettier, Husky + lint-staged pre-commit hooks.
+**Not configured**: Jest/Vitest (no test framework).
 
 ## Project Structure
 
@@ -92,26 +93,33 @@ curl http://localhost:3000/poller/api/run
 
 # Regenerate all summaries
 curl -X POST "http://localhost:3000/poller/api/regenerate?force=true"
+
+# Linting & formatting
+npm run lint                    # ESLint check
+npm run lint:fix                # ESLint autofix
+npm run format                  # Prettier write
+npm run format:check            # Prettier check
 ```
 
 ## Environment Variables
 
 Create `.env.local` from `.env.example`:
 
-| Variable | Description |
-|----------|-------------|
-| `CRON_SECRET` | Vercel cron job auth token |
-| `EXTERNAL_API_URL` | SLF bulletin API endpoint |
-| `DATABASE_URL` | Supabase PostgreSQL connection string |
-| `ANTHROPIC_API_KEY` | Claude API key |
-| `RESEND_API_KEY` | Resend email API key |
-| `RESEND_FROM_EMAIL` | Sender email address |
+| Variable            | Description                           |
+| ------------------- | ------------------------------------- |
+| `CRON_SECRET`       | Vercel cron job auth token            |
+| `EXTERNAL_API_URL`  | SLF bulletin API endpoint             |
+| `DATABASE_URL`      | Supabase PostgreSQL connection string |
+| `ANTHROPIC_API_KEY` | Claude API key                        |
+| `RESEND_API_KEY`    | Resend email API key                  |
+| `RESEND_FROM_EMAIL` | Sender email address                  |
 
 Pull from Vercel: `vercel env pull .env.local`
 
 ## Code Conventions
 
 ### Naming
+
 - **Files**: lowercase with hyphens (`analyse-bulletin.ts`, `bulletin-view.tsx`)
 - **Components**: PascalCase (`BulletinView`)
 - **Functions/variables**: camelCase
@@ -119,7 +127,9 @@ Pull from Vercel: `vercel env pull .env.local`
 - **Constants**: SCREAMING_SNAKE_CASE
 
 ### Module Headers
+
 Every module has a header comment explaining its purpose:
+
 ```typescript
 // lib/analyse-bulletin.ts
 //
@@ -128,16 +138,19 @@ Every module has a header comment explaining its purpose:
 ```
 
 ### Error Handling
+
 - Custom error classes for domain errors (e.g., `BulletinAnalysisError`)
 - Console logs with `[COMPONENT]` prefixes: `console.log("[POLLER] Starting...")`
 - Try-catch in async route handlers with appropriate HTTP status codes
 
 ### TypeScript
+
 - Strict mode enabled
 - Zod validation for Claude API responses at runtime
 - Explicit types for function parameters and return values
 
 ### CSS & Design
+
 - All colors/fonts as CSS custom properties in `web/app/globals.css`
 - Inline styles via `React.CSSProperties` objects
 - Responsive sizing via CSS `clamp()`
@@ -145,6 +158,7 @@ Every module has a header comment explaining its purpose:
 - Fonts: Playfair Display (display), DM Sans (body), DM Mono (mono)
 
 ### Database
+
 - Single `Bulletin` model storing raw SLF GeoJSON + Claude analysis as JSONB
 - PrismaPg adapter for serverless connection pooling
 
@@ -161,6 +175,7 @@ Every module has a header comment explaining its purpose:
 ## Deployment
 
 Vercel Services with two cron jobs:
+
 - `0 7 * * *` (07:00 UTC) — morning bulletin
 - `0 16 * * *` (16:00 UTC) — afternoon bulletin
 
@@ -169,18 +184,21 @@ Both hit `GET /poller/api/run`.
 ## Common Tasks
 
 ### Add a new bulletin field
+
 1. Update Zod schema in `poller/app/lib/bulletin-schema.ts`
 2. Update system prompt in `poller/app/lib/bulletin-constants.ts`
 3. Update `BulletinView` in `web/app/bulletin-view.tsx` to render it
 4. Regenerate existing summaries via `/poller/api/regenerate?force=true`
 
 ### Modify Claude's analysis
+
 1. Edit system prompt in `bulletin-constants.ts`
 2. Edit user message in `bulletin-prompt.ts`
 3. Update Zod schema if output shape changes
 4. Test locally: `curl http://localhost:3000/poller/api/run`
 
 ### Add a new API route
+
 1. Create `poller/app/api/[name]/route.ts`
 2. Export `GET`/`POST` handlers
 3. Use Prisma: `const prisma = new PrismaClient({ adapter })`

@@ -45,12 +45,13 @@ export async function POST(request: Request) {
     const bulletins = await prisma.bulletin.findMany({ where });
 
     // Also pick up rows where summary was stored as empty object {}
-    const toProcess = force || body.bulletinId
-      ? bulletins
-      : bulletins.filter((b) => {
-          const s = b.summary as Record<string, unknown> | null;
-          return !s || Object.keys(s).length === 0;
-        });
+    const toProcess =
+      force || body.bulletinId
+        ? bulletins
+        : bulletins.filter((b) => {
+            const s = b.summary as Record<string, unknown> | null;
+            return !s || Object.keys(s).length === 0;
+          });
 
     if (toProcess.length === 0) {
       return Response.json({ ok: true, message: "Nothing to regenerate", updated: 0 });
@@ -83,11 +84,15 @@ export async function POST(request: Request) {
       }
     }
 
-    return Response.json({ ok: true, updated: results.filter((r) => r.status === "updated").length, results });
+    return Response.json({
+      ok: true,
+      updated: results.filter((r) => r.status === "updated").length,
+      results,
+    });
   } catch (error) {
     return Response.json(
       { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -34,16 +34,20 @@ vercel env pull .env.local
 ### 2. Get API Keys
 
 **Claude API:**
+
 - Go to https://console.anthropic.com
 - Create a key, add to Vercel dashboard as `ANTHROPIC_API_KEY`
 
 **Resend (Email):**
+
 ```bash
 vercel integration add resend
 ```
+
 This auto-provisions `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
 
 **SLF Bulletin API:**
+
 - Update `EXTERNAL_API_URL` with the actual SLF endpoint (see below)
 
 ### 3. Set Up Database
@@ -175,18 +179,22 @@ Runs every 5 minutes on **Pro** plan. (Hobby plan: max once per day.)
 ## Troubleshooting
 
 **Poller returns 401:**
+
 - Check `CRON_SECRET` matches env var
 - Verify Vercel injects auth header correctly
 
 **Database connection fails:**
+
 - Run `vercel env pull .env.local` again
 - Check Supabase project is active
 
 **Claude summarization fails:**
+
 - Verify `ANTHROPIC_API_KEY` is set in Vercel
 - Check Claude API rate limits
 
 **Email not sent:**
+
 - Verify `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are set
 - Add recipients to the email logic (currently empty — configure in code or env)
 

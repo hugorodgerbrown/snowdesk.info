@@ -11,8 +11,8 @@ const ActivityRatingSchema = z.object({
 });
 
 export const BulletinAnalysisSchema = z.object({
-  date: z.string(),             // ISO date
-  validUntil: z.string(),       // ISO datetime
+  date: z.string(), // ISO date
+  validUntil: z.string(), // ISO datetime
   bulletinID: z.string(),
   region: z.object({
     id: z.string(),
@@ -35,7 +35,7 @@ export const BulletinAnalysisSchema = z.object({
       elevationMin: z.number().nullable(),
       elevationMax: z.number().nullable(),
       description: z.string(),
-    })
+    }),
   ),
   weather: z.object({
     past24h: z.string(),
