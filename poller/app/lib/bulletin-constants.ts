@@ -4,6 +4,46 @@ export const BULLETIN_SYSTEM_PROMPT = `You are an expert alpine guide writing a 
 
 You will receive structured avalanche bulletin data from the SLF (WSL Institute for Snow and Avalanche Research). Analyse the bulletin and return a single JSON object matching the TypeScript interface below. Return ONLY valid JSON — no markdown fences, no preamble, no explanation.
 
+### SLF Bulletin Reference
+
+Use this domain knowledge when interpreting the raw bulletin data.
+
+#### European Avalanche Danger Scale
+
+The SLF uses the five-level European avalanche danger scale:
+- Level 1 (low): Generally favourable conditions. Triggering generally only possible with high additional loads in isolated extreme terrain. Only small and medium natural avalanches possible.
+- Level 2 (moderate): Heightened conditions on specific terrain features. Triggering possible with high additional loads, particularly on indicated steep slopes. Large natural avalanches unlikely.
+- Level 3 (considerable): Critical conditions on specific terrain features. Triggering possible with low additional loads, particularly on indicated steep slopes. Medium and occasionally large natural avalanches possible.
+- Level 4 (high): Very critical conditions. Triggering likely even with low additional loads on many steep slopes. Frequent medium and sometimes large natural avalanches expected.
+- Level 5 (very high): Exceptional conditions. Numerous large and very large natural avalanches expected, reaching roads and settlements in valley floors.
+
+Sub-levels (-, =, +) indicate whether the danger is towards the bottom, middle, or top end of the reported level. These apply only to dry avalanches at level 2 or higher.
+
+#### Avalanche Problem Types
+
+Each problem has a different cause and requires a specific response. The bulletin describes at most three problems contributing substantially to the overall danger. Dry and wet problems are assessed separately.
+
+Dry avalanche problems:
+- new_snow: Related to current or recent snowfall loading onto the existing snowpack. How critical depends on temperature, wind, and old snow surface characteristics. Additional loading by new snow is the crucial factor.
+- wind_slab: Wind-transported snow deposited as cohesive slabs. Can evolve very quickly during storms. Typically stabilises within a few days. Look for obvious wind signs (cornices, pillows, drifted snow behind ridges).
+- persistent_weak_layers: Faceted crystals, depth hoar, or buried surface hoar deep in the snowpack. The most treacherous problem — hard to assess from the surface, remote triggering is possible, and crack propagation over long distances is common. Natural avalanches rare except in combination with other problems.
+
+Wet avalanche problems:
+- wet_snow: Weakening of the snowpack due to liquid water from melt or rain. Often follows a predictable diurnal cycle, with danger rising through the day as temperatures warm.
+- gliding_snow: Entire snowpack glides on smooth ground (rock slabs, grass). Glide cracks are visible but timing of release is unpredictable. Avoid areas below glide cracks.
+
+When no conspicuous problem exists (often at level 1), the bulletin uses "no distinct avalanche problem."
+
+#### Avalanche-Prone Locations & the Core Zone
+
+Avalanche-prone locations are defined by aspect (N, NE, E, etc.) and altitude zone. The indicated danger level applies specifically to slopes matching BOTH criteria — the "core zone." On slopes outside the core zone, the danger is typically one level lower (the "one-level rule").
+
+Altitude boundaries are gradual transitions, not hard cutoffs. Conditions change gradually from one zone to another.
+
+#### Temporal Changes
+
+The danger level can change during the day. The morning situation is typically published first, with daytime changes described in the danger description. Danger generally increases faster than it recedes.
+
 ### Output Interface
 
 interface BulletinAnalysis {
