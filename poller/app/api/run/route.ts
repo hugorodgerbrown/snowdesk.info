@@ -78,8 +78,21 @@ export async function GET(request: Request) {
 
         const regionId = props.regions[0]?.regionID;
         if (!regionId) throw new Error("Bulletin has no regions");
-        const analysis = await analyseBulletin(featureBulletin as never, regionId);
-        const bulletin = await storeBulletin(featureBulletin, toDisplaySummary(analysis));
+        const { analysis, meta } = await analyseBulletin(featureBulletin as never, regionId);
+        const bulletin = await storeBulletin(featureBulletin);
+
+        await prisma.bulletinSummary.create({
+          data: {
+            bulletinId: bulletin.id,
+            summary: toDisplaySummary(analysis) as Prisma.InputJsonValue,
+            prompt: meta.prompt,
+            calledAt: meta.calledAt,
+            durationMs: meta.durationMs,
+            statusCode: meta.statusCode,
+            inputTokens: meta.inputTokens,
+            outputTokens: meta.outputTokens,
+          },
+        });
 
         console.log(`[POLLER] Stored bulletin ${bulletin.id}`);
         results.push({ bulletinId: bulletin.id, status: "stored" });
@@ -127,14 +140,13 @@ async function fetchSLFBulletins() {
   return response.json();
 }
 
-async function storeBulletin(feature: SLFFeature, summary?: Record<string, unknown>) {
+async function storeBulletin(feature: SLFFeature) {
   const props = feature.properties;
 
   const bulletin = await prisma.bulletin.create({
     data: {
       bulletinId: props.bulletinID,
       rawData: feature as unknown as Prisma.InputJsonValue,
-      summary: (summary ?? {}) as Prisma.InputJsonValue,
       issuedAt: new Date(props.publicationTime),
       validFrom: new Date(props.validTime.startTime),
       validTo: new Date(props.validTime.endTime),

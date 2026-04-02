@@ -58,8 +58,8 @@ const card: React.CSSProperties = {
   background: "rgba(245,240,232,0.7)",
 };
 
-export function BulletinView({ bulletin }: { bulletin: Bulletin }) {
-  const a = bulletin.summary as unknown as BulletinAnalysis;
+export function BulletinView({ bulletin, summary }: { bulletin: Bulletin; summary: unknown }) {
+  const a = summary as BulletinAnalysis;
 
   if (!a.overallVerdict) {
     return (

@@ -40,36 +40,34 @@ export async function POST(request: Request) {
       ? { bulletinId: body.bulletinId }
       : force
         ? {}
-        : { summary: { equals: Prisma.DbNull } };
+        : { summaries: { none: {} } };
 
     const bulletins = await prisma.bulletin.findMany({ where });
 
-    // Also pick up rows where summary was stored as empty object {}
-    const toProcess =
-      force || body.bulletinId
-        ? bulletins
-        : bulletins.filter((b) => {
-            const s = b.summary as Record<string, unknown> | null;
-            return !s || Object.keys(s).length === 0;
-          });
-
-    if (toProcess.length === 0) {
+    if (bulletins.length === 0) {
       return Response.json({ ok: true, message: "Nothing to regenerate", updated: 0 });
     }
 
-    console.log(`[REGENERATE] Processing ${toProcess.length} bulletin(s)...`);
+    console.log(`[REGENERATE] Processing ${bulletins.length} bulletin(s)...`);
 
     const results = [];
-    for (const bulletin of toProcess) {
+    for (const bulletin of bulletins) {
       try {
         const regionId = bulletin.regionIds[0];
         if (!regionId) throw new Error("Bulletin has no regionIds");
-        const analysis = await analyseBulletin(bulletin.rawData as never, regionId);
-        const summary = toDisplaySummary(analysis);
+        const { analysis, meta } = await analyseBulletin(bulletin.rawData as never, regionId);
 
-        await prisma.bulletin.update({
-          where: { id: bulletin.id },
-          data: { summary: summary as Prisma.InputJsonValue },
+        await prisma.bulletinSummary.create({
+          data: {
+            bulletinId: bulletin.id,
+            summary: toDisplaySummary(analysis) as Prisma.InputJsonValue,
+            prompt: meta.prompt,
+            calledAt: meta.calledAt,
+            durationMs: meta.durationMs,
+            statusCode: meta.statusCode,
+            inputTokens: meta.inputTokens,
+            outputTokens: meta.outputTokens,
+          },
         });
 
         console.log(`[REGENERATE] Updated ${bulletin.bulletinId}`);

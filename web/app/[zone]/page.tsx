@@ -10,10 +10,11 @@ const prisma = new PrismaClient({ adapter });
 export default async function ZonePage({ params }: { params: Promise<{ zone: string }> }) {
   const { zone } = await params;
 
-  // Fetch the most recent bulletins and find the one matching this slug
+  // Fetch the most recent bulletins with their latest summary
   const recentBulletins = await prisma.bulletin.findMany({
     orderBy: { issuedAt: "desc" },
     take: 100,
+    include: { summaries: { orderBy: { createdAt: "desc" }, take: 1 } },
   });
 
   const bulletin = recentBulletins.find((b) =>
@@ -22,5 +23,7 @@ export default async function ZonePage({ params }: { params: Promise<{ zone: str
 
   if (!bulletin) notFound();
 
-  return <BulletinView bulletin={bulletin} />;
+  const summary = bulletin.summaries[0]?.summary ?? null;
+
+  return <BulletinView bulletin={bulletin} summary={summary} />;
 }

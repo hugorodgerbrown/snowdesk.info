@@ -19,9 +19,6 @@ model Bulletin {
   // Raw GeoJSON feature from SLF API
   rawData       Json     @db.JsonB
 
-  // Claude-generated summary (BulletinAnalysis JSON)
-  summary       Json     @db.JsonB
-
   // Region metadata
   regionIds     String[] // Array of region IDs covered by this bulletin
   regionNames   String[] // Array of region names
@@ -37,7 +34,33 @@ model Bulletin {
   // When we fetched this
   fetchedAt     DateTime @default(now())
 
+  // Claude-generated summaries
+  summaries     BulletinSummary[]
+
   @@unique([bulletinId, issuedAt])
   @@index([fetchedAt])
   @@index([issuedAt])
+}
+
+model BulletinSummary {
+  id            String   @id @default(cuid())
+
+  // FK to Bulletin
+  bulletinId    String
+  bulletin      Bulletin @relation(fields: [bulletinId], references: [id], onDelete: Cascade)
+
+  // Display-ready summary (transformed BulletinAnalysis JSON)
+  summary       Json     @db.JsonB
+
+  // Claude API call metadata
+  prompt        String   // Full prompt sent to Claude
+  calledAt      DateTime // When the API call was initiated
+  durationMs    Int      // How long the API call took in milliseconds
+  statusCode    Int      // HTTP response status code
+  inputTokens   Int      // Number of input tokens used
+  outputTokens  Int      // Number of output tokens used
+
+  createdAt     DateTime @default(now())
+
+  @@index([bulletinId])
 }

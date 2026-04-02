@@ -33,27 +33,43 @@ export class BulletinAnalysisError extends Error {
   }
 }
 
+/** Metadata about the Claude API call, returned alongside the analysis. */
+export interface AnalysisApiMeta {
+  prompt: string;
+  calledAt: Date;
+  durationMs: number;
+  statusCode: number;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+/** Result of analyseBulletin: the validated analysis plus API call metadata. */
+export interface AnalysisResult {
+  analysis: BulletinAnalysis;
+  meta: AnalysisApiMeta;
+}
+
 /**
  * Analyse an SLF bulletin feature for a specific region.
  *
  * @param feature  - Raw SLF GeoJSON feature
  * @param regionId - Target region, e.g. "CH-4116"
  * @param retries  - Retry count on parse/validation failure (default 1)
- * @returns          Validated BulletinAnalysis
+ * @returns          Validated BulletinAnalysis with API call metadata
  */
 export async function analyseBulletin(
   feature: SLFBulletinFeature,
   regionId: string,
   retries = 1,
-): Promise<BulletinAnalysis> {
+): Promise<AnalysisResult> {
   const userPrompt = buildBulletinPrompt(feature, regionId);
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const raw = await callClaude(userPrompt);
-    const result = parseAndValidate(raw);
+    const apiResult = await callClaude(userPrompt);
+    const result = parseAndValidate(apiResult.text);
 
     if (result.success) {
-      return result.data;
+      return { analysis: result.data, meta: { ...apiResult.meta, prompt: userPrompt } };
     }
 
     // Log the failure but retry if we have attempts left
@@ -75,7 +91,15 @@ export async function analyseBulletin(
 // Internals
 // ---------------------------------------------------------------------------
 
-async function callClaude(userPrompt: string): Promise<string> {
+interface ClaudeCallResult {
+  text: string;
+  meta: Omit<AnalysisApiMeta, "prompt">;
+}
+
+async function callClaude(userPrompt: string): Promise<ClaudeCallResult> {
+  const calledAt = new Date();
+  const start = performance.now();
+
   const response = await anthropic.messages.create({
     model: BULLETIN_MODEL,
     max_tokens: BULLETIN_MAX_TOKENS,
@@ -83,12 +107,23 @@ async function callClaude(userPrompt: string): Promise<string> {
     messages: [{ role: "user", content: userPrompt }],
   });
 
+  const durationMs = Math.round(performance.now() - start);
+
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {
     throw new BulletinAnalysisError("Claude response contained no text block");
   }
 
-  return textBlock.text;
+  return {
+    text: textBlock.text,
+    meta: {
+      calledAt,
+      durationMs,
+      statusCode: 200,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    },
+  };
 }
 
 function parseAndValidate(
