@@ -86,3 +86,57 @@ main {
   position: relative;
   z-index: 1;
 }
+
+/* Responsive grids for bulletin-view */
+.grid-activities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.grid-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.grid-weather-temps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.grid-weather-details {
+  border-top: 1px solid var(--ink-faint);
+  padding-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 540px) {
+  .grid-activities {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-weather-temps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-weather-details {
+    grid-template-columns: 1fr;
+  }
+
+  .masthead-bar {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start !important;
+  }
+}
