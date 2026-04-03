@@ -78,21 +78,8 @@ export async function GET(request: Request) {
 
         const regionId = props.regions[0]?.regionID;
         if (!regionId) throw new Error("Bulletin has no regions");
-        const { analysis, meta } = await analyseBulletin(featureBulletin as never, regionId);
-        const bulletin = await storeBulletin(featureBulletin);
-
-        await prisma.bulletinSummary.create({
-          data: {
-            bulletinId: bulletin.id,
-            summary: toDisplaySummary(analysis) as Prisma.InputJsonValue,
-            prompt: meta.prompt,
-            calledAt: meta.calledAt,
-            durationMs: meta.durationMs,
-            statusCode: meta.statusCode,
-            inputTokens: meta.inputTokens,
-            outputTokens: meta.outputTokens,
-          },
-        });
+        const analysis = await analyseBulletin(featureBulletin as never, regionId);
+        const bulletin = await storeBulletin(featureBulletin, toDisplaySummary(analysis));
 
         console.log(`[POLLER] Stored bulletin ${bulletin.id}`);
         results.push({ bulletinId: bulletin.id, status: "stored" });
