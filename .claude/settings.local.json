@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node node_modules/.bin/prisma generate)",
+      "Bash(npm --version)",
+      "Read(//Users/hugo/.nvm/versions/node/**)",
+      "Bash(~/.nvm/versions/node/v20.20.2/bin/npx prisma:*)",
+      "Bash(~/.nvm/versions/node/v20.20.2/bin/node --version)",
+      "Bash(~/.nvm/versions/node/v20.20.2/bin/node node_modules/.bin/prisma generate)",
+      "Bash(grep -v \"^[a-z\\\\`]\")",
+      "Bash(gpg --list-secret-keys --keyid-format LONG 2B8030AA735D78D4)"
+    ]
+  }
+}
