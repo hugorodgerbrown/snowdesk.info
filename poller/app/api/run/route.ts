@@ -127,14 +127,13 @@ async function fetchSLFBulletins() {
   return response.json();
 }
 
-async function storeBulletin(feature: SLFFeature, summary?: Record<string, unknown>) {
+async function storeBulletin(feature: SLFFeature) {
   const props = feature.properties;
 
   const bulletin = await prisma.bulletin.create({
     data: {
       bulletinId: props.bulletinID,
       rawData: feature as unknown as Prisma.InputJsonValue,
-      summary: (summary ?? {}) as Prisma.InputJsonValue,
       issuedAt: new Date(props.publicationTime),
       validFrom: new Date(props.validTime.startTime),
       validTo: new Date(props.validTime.endTime),
