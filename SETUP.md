@@ -5,9 +5,44 @@
 Install the following:
 
 1. **Node.js 20+** — download from https://nodejs.org or use a version manager like `nvm`
-2. **Docker** — needed to run a local PostgreSQL database
+2. **Supabase CLI** — manages the local database
 3. **Vercel CLI** — `npm install -g vercel`
 4. **Git** — likely already installed; check with `git --version`
+
+### Install the Supabase CLI
+
+On macOS:
+
+```bash
+brew install supabase/tap/supabase
+```
+
+On Linux:
+
+```bash
+brew install supabase/tap/supabase
+```
+
+On Windows (via scoop):
+
+```bash
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase
+```
+
+Or install via npm (any platform):
+
+```bash
+npm install -g supabase
+```
+
+Verify with:
+
+```bash
+supabase --version
+```
+
+The Supabase CLI uses Docker under the hood, so make sure **Docker** is installed and running.
 
 ## 1. Clone the repo
 
@@ -24,26 +59,35 @@ npm install
 
 This installs both the `web` and `poller` workspaces.
 
-## 3. Start a local PostgreSQL database
+## 3. Start a local Supabase database
 
-The simplest way is with Docker:
+Initialize Supabase (first time only):
 
 ```bash
-docker run --name snowdesk-db \
-  -e POSTGRES_USER=snowdesk \
-  -e POSTGRES_PASSWORD=snowdesk \
-  -e POSTGRES_DB=snowdesk \
-  -p 5432:5432 \
-  -d postgres:16
+supabase init
 ```
 
-This starts a PostgreSQL 16 instance on `localhost:5432`.
-
-To stop/start it later:
+Start the local Supabase stack:
 
 ```bash
-docker stop snowdesk-db
-docker start snowdesk-db
+supabase start
+```
+
+This spins up a local PostgreSQL database (and other Supabase services) via Docker. Once started, it prints the connection details — you'll need the `DB URL` for the next step.
+
+The local database runs on `localhost:54322` by default.
+
+To stop/start later:
+
+```bash
+supabase stop
+supabase start
+```
+
+To check status:
+
+```bash
+supabase status
 ```
 
 ## 4. Configure environment variables
@@ -57,8 +101,8 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```env
-# Local database (matches the Docker command above)
-DATABASE_URL=postgresql://snowdesk:snowdesk@localhost:5432/snowdesk
+# Local Supabase database (printed by `supabase status` as "DB URL")
+DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres
 
 # Get from team or Vercel dashboard
 CRON_SECRET=any-local-secret
@@ -76,7 +120,7 @@ If you have access to the Vercel project, you can pull env vars directly:
 vercel env pull .env.local
 ```
 
-Then override `DATABASE_URL` with the local Docker one above.
+Then override `DATABASE_URL` with the local Supabase one above.
 
 ## 5. Set up the database schema
 
@@ -134,10 +178,10 @@ Pre-commit hooks (Husky + lint-staged) run automatically on `git commit`.
 ## Troubleshooting
 
 **`prisma migrate dev` fails with connection error**
-Check that the Docker container is running: `docker ps`. The database takes a second or two to be ready after starting.
+Check that Supabase is running: `supabase status`. If not, run `supabase start`.
 
-**Port 5432 already in use**
-Another PostgreSQL instance is running. Either stop it or change the Docker port mapping (e.g., `-p 5433:5432`) and update `DATABASE_URL` accordingly.
+**Port 54322 already in use**
+Another Supabase or PostgreSQL instance may be running. Stop it or check with `docker ps`.
 
 **Port 3000 already in use**
 Another dev server is running. Stop it or use `vercel dev -L --listen 3001`.
