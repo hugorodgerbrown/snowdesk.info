@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Bulletin } from "../../generated/prisma/client";
 import { toSlug } from "./slug";
+import { ValidityWindow } from "./validity-window";
 
 interface AdjacentBulletin {
   bulletinId: string;
@@ -245,6 +246,9 @@ export function BulletinView({
             </div>
           )}
         </header>
+
+        {/* Validity window */}
+        <ValidityWindow bulletin={bulletin} />
 
         {/* Verdict banner */}
         <section
